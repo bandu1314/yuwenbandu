@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#e74c3c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="虾米听写">
+<title>虾米智能听写 - 语文学习助手</title>
+<link rel="manifest" href="#" id="pwa-manifest">
+<style>
+  :root {
+    --primary: #e74c3c;
+    --primary-dark: #c0392b;
+    --secondary: #f39c12;
+    --success: #27ae60;
+    --info: #3498db;
+    --bg: #fff9f0;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #7f8c8d;
+    --border: #eee;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  
+  /* ===== TOP NAV ===== */
+  .top-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 2px 10px rgba(231,76,60,0.3);
+  }
+  .nav-logo { font-size: 24px; }
+  .nav-title { color: white; font-size: 18px; font-weight: bold; flex: 1; }
+  .nav-subtitle { color: rgba(255,255,255,0.8); font-size: 11px; }
+  .nav-right { display: flex; gap: 8px; }
+  .nav-btn {
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.3); }
+  
+  /* ===== MAIN TABS ===== */
+  .tab-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: white; display: flex; border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .tab-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 8px 4px; cursor: pointer; transition: color 0.2s;
+    color: var(--text-light); font-size: 10px; gap: 2px;
+  }
+  .tab-item.active { color: var(--primary); }
+  .tab-icon { font-size: 22px; line-height: 1; }
+  
+  /* ===== PAGES ===== */
+  .page { display: none; position: fixed; top: 56px; bottom: 60px; left: 0; right: 0; overflow-y: auto; padding: 16px; }
+  .page.active { display: block; }
+  
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .card-title { font-size: 15px; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  
+  /* ===== HOME PAGE ===== */
+  .hero-banner {
+    background: linear-gradient(135deg, #ff6b6b, #feca57);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    color: white; text-align: center;
+  }
+  .hero-banner h2 { font-size: 22px; margin-bottom: 4px; }
+  .hero-banner p { opacity: 0.9; font-size: 13px; }
+  
+  .quick-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .quick-btn {
+    background: white; border-radius: var(--radius); padding: 16px; text-align: center;
+    box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+  }
+  .quick-btn:active { transform: scale(0.97); }
+  .quick-btn .btn-icon { font-size: 32px; margin-bottom: 6px; }
+  .quick-btn .btn-label { font-size: 13px; font-weight: bold; color: var(--text); }
+  .quick-btn .btn-desc { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  .quick-btn.primary { border-color: var(--primary); background: #fff5f5; }
+  .quick-btn.secondary { border-color: var(--secondary); background: #fffbf0; }
+  
+  /* ===== DICTATION PAGE ===== */
+  .mode-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+  .mode-tab {
+    padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer;
+    background: white; box-shadow: var(--shadow); white-space: nowrap;
+    transition: all 0.2s; border: 2px solid transparent; color: var(--text);
+  }
+  .mode-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+  
+  .input-area textarea {
+    width: 100%; border: 2px solid var(--border); border-radius: 12px;
+    padding: 12px; font-size: 15px; resize: none; height: 140px;
+    font-family: inherit; outline: none; transition: border 0.2s;
+  }
+  .input-area textarea:focus { border-color: var(--primary); }
+  
+  .settings-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+  .settings-label { font-size: 13px; color: var(--text-light); min-width: 70px; }
+  .settings-row select, .settings-row input[type="number"] {
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+    font-size: 13px; outline: none; background: white;
+  }
+  .slider-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
+  input[type="range"] { flex: 1; accent-color: var(--primary); }
+  .slider-val { font-size: 12px; color: var(--text-light); min-width: 30px; }
+  
+  .toggle-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  .toggle-label { font-size: 13px; flex: 1; }
+  .toggle { position: relative; width: 44px; height: 24px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background: #ddd; border-radius: 24px; transition: 0.3s;
+  }
+  .toggle-slider:before {
+    position: absolute; content: ''; width: 18px; height: 18px;
+    left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s;
+  }
+  input:checked + .toggle-slider { background: var(--primary); }
+  input:checked + .toggle-slider:before { transform: translateX(20px); }
+  
+  /* ===== PLAY CONTROLS ===== */
+  .play-area { text-align: center; padding: 16px 0; }
+  .current-word-display {
+    background: linear-gradient(135deg, var(--primary), #ff8a80);
+    color: white; border-radius: var(--radius); padding: 20px;
+    margin: 12px 0; min-height: 80px; display: flex; align-items: center;
+    justify-content: center; font-size: 28px; font-weight: bold;
+    letter-spacing: 2px; box-shadow: 0 4px 20px rgba(231,76,60,0.3);
+  }
+  .word-counter { font-size: 13px; color: var(--text-light); margin: 8px 0; }
+  .progress-bar { background: var(--border); border-radius: 10px; height: 8px; margin: 12px 0; overflow: hidden; }
+  .progress-fill { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+  
+  .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: 12px 24px; border-radius: 30px; border: none; font-size: 14px;
+    font-weight: bold; cursor: pointer; transition: all 0.2s; display: inline-flex;
+    align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(231,76,60,0.4); }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary { background: white; color: var(--text); box-shadow: var(--shadow); border: 1px solid var(--border); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-info { background: var(--info); color: white; }
+  .btn-sm { padding: 8px 16px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+  
+  /* ===== GRADE SELECTOR ===== */
+  .grade-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+  .grade-btn {
+    padding: 10px; border-radius: 10px; border: 2px solid var(--border);
+    background: white; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    text-align: center;
+  }
+  .grade-btn.active { border-color: var(--primary); background: #fff5f5; color: var(--primary); font-weight: bold; }
+  
+  /* ===== WORD LIBRARY ===== */
+  .word-count-badge {
+    background: var(--primary); color: white; border-radius: 20px;
+    padding: 2px 8px; font-size: 11px; margin-left: 6px;
+  }
+  .word-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .word-tag {
+    background: #fff5f5; color: var(--primary); border: 1px solid #ffcccc;
+    border-radius: 20px; padding: 4px 12px; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .word-tag:hover { background: var(--primary); color: white; }
+  .word-tag.selected { background: var(--primary); color: white; }
+  
+  /* ===== HISTORY PAGE ===== */
+  .history-item {
+    background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 10px;
+    box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s;
+    border-left: 4px solid var(--primary);
+  }
+  .history-item:active { transform: scale(0.99); }
+  .history-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+  .history-meta { font-size: 12px; color: var(--text-light); display: flex; gap: 10px; flex-wrap: wrap; }
+  .history-words { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .history-word-tag {
+    background: #f5f5f5; border-radius: 12px; padding: 2px 8px; font-size: 12px; color: var(--text-light);
+  }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
+  .empty-state .empty-icon { font-size: 60px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+  
+  /* ===== SETTINGS PAGE ===== */
+  .settings-section { margin-bottom: 8px; }
+  .settings-section-title { font-size: 12px; color: var(--text-light); padding: 8px 4px 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .settings-item {
+    background: white; border-radius: 12px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 2px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05); cursor: pointer;
+  }
+  .settings-item-icon { font-size: 20px; width: 32px; text-align: center; }
+  .settings-item-text { flex: 1; }
+  .settings-item-title { font-size: 14px; }
+  .settings-item-desc { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+  .settings-item-right { color: var(--text-light); font-size: 12px; }
+  
+  /* ===== MODALS ===== */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 200; display: flex;
+    align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal {
+    background: white; border-radius: 24px 24px 0 0; width: 100%;
+    max-width: 520px; max-height: 90vh; overflow-y: auto;
+    padding: 20px; transform: translateY(100%); transition: transform 0.3s;
+  }
+  .modal-overlay.active .modal { transform: translateY(0); }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 17px; font-weight: bold; margin-bottom: 16px; }
+  
+  /* ===== WORD LIBRARY BUILD-IN ===== */
+  .unit-selector { display: flex; gap: 6px; margin: 10px 0; overflow-x: auto; padding-bottom: 4px; }
+  .unit-btn {
+    padding: 6px 14px; border-radius: 20px; background: white; box-shadow: var(--shadow);
+    font-size: 12px; cursor: pointer; white-space: nowrap; border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .unit-btn.active { border-color: var(--info); color: var(--info); }
+  
+  /* ===== NOTIFICATION ===== */
+  .toast {
+    position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-10px);
+    background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px;
+    font-size: 13px; z-index: 500; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  
+  /* ===== OFFLINE BADGE ===== */
+  .offline-badge {
+    position: fixed; top: 56px; left: 0; right: 0; background: var(--secondary);
+    color: white; text-align: center; font-size: 12px; padding: 4px; z-index: 90;
+    display: none;
+  }
+  body.offline .offline-badge { display: block; }
+  body.offline .page { top: 76px; }
+  
+  /* ===== RESPONSIVE ===== */
+  @media (min-width: 480px) {
+    .quick-btns { grid-template-columns: repeat(4, 1fr); }
+    .grade-selector { grid-template-columns: repeat(6, 1fr); }
+  }
+  
+  /* ===== ANIMATIONS ===== */
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .playing-animation { animation: pulse 1s infinite; }
+  
+  /* ===== INSTALL BANNER ===== */
+  .install-banner {
+    background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+    border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .install-banner-text { flex: 1; font-size: 13px; }
+  .install-banner-title { font-weight: bold; margin-bottom: 2px; }
+  .install-close { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+
+  /* ===== VIP BADGE ===== */
+  .vip-badge {
+    background: linear-gradient(135deg, #f39c12, #e67e22); color: white;
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .free-badge {
+    background: #ecf0f1; color: var(--text-light);
+    padding: 3px 10px; border-radius: 12px; font-size: 11px;
+  }
+
+  /* ===== FREE LIMIT BANNER ===== */
+  .limit-banner {
+    background: linear-gradient(135deg, #fff3cd, #ffe0a3);
+    border: 1px solid #f39c12; border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .limit-banner-text { flex: 1; font-size: 13px; color: #856404; }
+  .limit-banner-title { font-weight: bold; font-size: 14px; }
+
+  /* ===== AD BANNER ===== */
+  .ad-banner {
+    background: #f8f9fa; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; margin: 8px 0; text-align: center;
+    font-size: 12px; color: var(--text-light); cursor: pointer;
+  }
+  .ad-banner-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .ad-label { font-size: 10px; color: #aaa; border: 1px solid #ddd; padding: 1px 4px; border-radius: 3px; }
+
+  /* ===== VIP MODAL ===== */
+  .vip-plan {
+    border: 2px solid var(--border); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s;
+    position: relative;
+  }
+  .vip-plan.recommended { border-color: var(--secondary); background: #fffbf0; }
+  .vip-plan.selected { border-color: var(--primary); background: #fff5f5; }
+  .vip-plan-tag {
+    position: absolute; top: -10px; right: 12px;
+    background: var(--secondary); color: white; font-size: 11px; font-weight: bold;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .vip-plan-price { font-size: 24px; font-weight: bold; color: var(--primary); }
+  .vip-plan-price span { font-size: 13px; font-weight: normal; color: var(--text-light); }
+  .vip-plan-title { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+  .vip-plan-features { font-size: 12px; color: var(--text-light); line-height: 1.8; margin-top: 8px; }
+
+  /* ===== ACTIVATION ===== */
+  .activation-input {
+    border: 2px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 16px; width: 100%; outline: none;
+    letter-spacing: 2px; text-align: center; font-family: monospace;
+    transition: border 0.2s;
+  }
+  .activation-input:focus { border-color: var(--primary); }
+  
+  /* ===== STATS BAR ===== */
+  .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stat-item { background: white; border-radius: 12px; padding: 12px; text-align: center; box-shadow: var(--shadow); }
+  .stat-num { font-size: 22px; font-weight: bold; color: var(--primary); }
+  .stat-label { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  
+  /* 字库页 */
+  .library-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .library-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 12px; border-radius: 16px; background: white;
+    border: 1px solid var(--border); font-size: 12px; cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn.active { background: var(--info); color: white; border-color: var(--info); }
+  
+  .scrollable-words { max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
+</style>
+</head>
+<body>
+
+<div class="offline-badge">📶 当前处于离线模式，已缓存内容可正常使用</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <span class="nav-logo">🦐</span>
+  <div style="flex:1">
+    <div class="nav-title">虾米智能听写</div>
+    <div class="nav-subtitle">语文学习 · 随时随地</div>
+  </div>
+  <div class="nav-right">
+    <div id="vip-status-badge" onclick="openModal('vipModal')" style="cursor:pointer"></div>
+    <button class="nav-btn" onclick="openModal('settingsModal')">⚙️ 设置</button>
+  </div>
+</nav>
+
+<!-- PAGES -->
+
+<!-- 首页 -->
+<div class="page active" id="page-home">
+  <div id="install-banner" class="install-banner" style="display:none">
+    <span style="font-size:28px">📲</span>
+    <div class="install-banner-text">
+      <div class="install-banner-title">添加到桌面，随时离线使用</div>
+      <div>像APP一样打开，无需网络</div>
+    </div>
+    <button class="btn btn-sm" style="background:white;color:#667eea;border:none;border-radius:20px;font-weight:bold;padding:6px 14px;cursor:pointer" onclick="installPWA()">安装</button>
+    <button class="install-close" onclick="document.getElementById('install-banner').style.display='none'">×</button>
+  </div>
+
+  <div class="hero-banner">
+    <div style="font-size:40px;margin-bottom:8px">🎙️</div>
+    <h2>智能听写助手</h2>
+    <p>输入词语 · 一键开始 · 自动朗读</p>
+  </div>
+
+  <!-- 限免提示条 -->
+  <div id="free-limit-banner" class="limit-banner" style="display:none">
+    <span style="font-size:28px">⏰</span>
+    <div class="limit-banner-text">
+      <div class="limit-banner-title">今日免费次数已用完（3/3）</div>
+      <div>开通会员，每天无限次听写 · 全册字库 · 无广告</div>
+    </div>
+    <button class="btn btn-sm" style="background:var(--secondary);color:white;border:none;border-radius:20px;padding:6px 14px;cursor:pointer;font-weight:bold;white-space:nowrap" onclick="openModal('vipModal')">30元/年</button>
+  </div>
+
+  <div class="stats-bar" id="home-stats">
+    <div class="stat-item">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">累计次数</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-words">0</div>
+      <div class="stat-label">听写词数</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-days">0</div>
+      <div class="stat-label">坚持天数</div>
+    </div>
+  </div>
+
+  <div class="quick-btns">
+    <div class="quick-btn primary" onclick="switchTab('dictation')">
+      <div class="btn-icon">✍️</div>
+      <div class="btn-label">开始听写</div>
+      <div class="btn-desc">自定义词语</div>
+    </div>
+    <div class="quick-btn secondary" onclick="switchTab('library')">
+      <div class="btn-icon">📚</div>
+      <div class="btn-label">课本字库</div>
+      <div class="btn-desc">1-6年级词表</div>
+    </div>
+    <div class="quick-btn" style="border-color:var(--success);background:#f0fff4" onclick="switchTab('history')">
+      <div class="btn-icon">📋</div>
+      <div class="btn-label">听写记录</div>
+      <div class="btn-desc">历史回顾</div>
+    </div>
+    <div class="quick-btn" style="border-color:var(--info);background:#f0f8ff" onclick="showHelp()">
+      <div class="btn-icon">💡</div>
+      <div class="btn-label">使用说明</div>
+      <div class="btn-desc">操作指南</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📌 今日建议</div>
+    <div id="daily-tip" style="font-size:14px;color:var(--text-light);line-height:1.8">
+      每天坚持10分钟听写练习，一周进步看得见！先从本周课文生字开始吧～
+    </div>
+  </div>
+
+  <div class="card" id="recent-history-card" style="display:none">
+    <div class="card-title">🕐 最近听写</div>
+    <div id="recent-history-list"></div>
+  </div>
+
+  <!-- 首页广告位（免费版显示） -->
+  <div id="home-ad" class="ad-banner" onclick="openModal('vipModal')">
+    <div class="ad-banner-inner">
+      <span class="ad-label">广告</span>
+      <span>🎓 开通会员 · 去广告 · 全年仅30元</span>
+      <span style="color:var(--primary);font-weight:bold">立即开通 →</span>
+    </div>
+  </div>
+</div>
+
+<!-- 听写页 -->
+<div class="page" id="page-dictation">
+  <div class="mode-tabs" id="mode-tabs">
+    <div class="mode-tab active" onclick="switchMode('custom')">✍️ 自定义听写</div>
+    <div class="mode-tab" onclick="switchMode('library')">📚 课本字库</div>
+    <div class="mode-tab" onclick="switchMode('error')">❌ 错题复习</div>
+  </div>
+
+  <!-- 自定义输入区 -->
+  <div id="custom-input-area">
+    <div class="card">
+      <div class="card-title">📝 输入听写内容</div>
+      <div class="input-area">
+        <textarea id="word-input" placeholder="每行输入一个词语或句子，例如：&#10;白天&#10;黑夜&#10;小草&#10;春风"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-secondary" onclick="clearInput()">🗑️ 清空</button>
+        <button class="btn btn-sm btn-secondary" onclick="loadLastRecord()">⬆️ 加载上次</button>
+        <button class="btn btn-sm btn-info" onclick="openModal('sampleModal')">📖 示例词语</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 字库选择区 -->
+  <div id="library-select-area" style="display:none">
+    <div class="card">
+      <div class="card-title">📚 选择年级</div>
+      <div class="grade-selector" id="grade-selector">
+        <div class="grade-btn" onclick="selectGrade(1)">一年级</div>
+        <div class="grade-btn" onclick="selectGrade(2)">二年级</div>
+        <div class="grade-btn active" onclick="selectGrade(3)">三年级</div>
+        <div class="grade-btn" onclick="selectGrade(4)">四年级</div>
+        <div class="grade-btn" onclick="selectGrade(5)">五年级</div>
+        <div class="grade-btn" onclick="selectGrade(6)">六年级</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📖 选择单元 <span id="grade-label" class="word-count-badge">三年级</span></div>
+      <div class="unit-selector" id="unit-selector"></div>
+      <div style="margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;color:var(--text-light)">选择词语</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-secondary" onclick="selectAllWords()">全选</button>
+            <button class="btn btn-sm btn-secondary" onclick="clearSelectedWords()">清除</button>
+          </div>
+        </div>
+        <div class="scrollable-words" id="library-words"></div>
+      </div>
+      <div style="margin-top:10px">
+        <div class="settings-row">
+          <span class="settings-label">听写数量</span>
+          <input type="number" id="word-count-input" value="10" min="1" max="50" style="width:70px">
+          <span style="font-size:12px;color:var(--text-light)">个（0=全部）</span>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">随机打乱顺序</span>
+          <label class="toggle"><input type="checkbox" id="shuffle-toggle" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 错题复习区 -->
+  <div id="error-review-area" style="display:none">
+    <div class="card">
+      <div class="card-title">❌ 错题本</div>
+      <div id="error-words-list">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>暂无错题记录<br>完成听写后手动标记错误词语</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 参数设置 -->
+  <div class="card" id="param-settings">
+    <div class="card-title">⚙️ 朗读设置</div>
+    <div class="settings-row">
+      <span class="settings-label">朗读次数</span>
+      <input type="number" id="repeat-count" value="2" min="1" max="5">
+      <span style="font-size:12px;color:var(--text-light)">遍</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">同词间隔</span>
+      <input type="number" id="word-interval" value="2" min="0" max="10" step="0.5">
+      <span style="font-size:12px;color:var(--text-light)">秒</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">词语间隔</span>
+      <input type="number" id="word-gap" value="5" min="1" max="30" step="0.5">
+      <span style="font-size:12px;color:var(--text-light)">秒</span>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">语速</span>
+      <div class="slider-wrap">
+        <input type="range" id="rate-slider" min="0.5" max="2" step="0.1" value="0.9" oninput="document.getElementById('rate-val').textContent=this.value+'x'">
+        <span class="slider-val" id="rate-val">0.9x</span>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="settings-label">音量</span>
+      <div class="slider-wrap">
+        <input type="range" id="vol-slider" min="0.1" max="1" step="0.1" value="1" oninput="document.getElementById('vol-val').textContent=Math.round(this.value*100)+'%'">
+        <span class="slider-val" id="vol-val">100%</span>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">报序号（"第1个，请听写："）</span>
+      <label class="toggle"><input type="checkbox" id="prefix-toggle"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">结束提示音</span>
+      <label class="toggle"><input type="checkbox" id="end-sound-toggle" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn btn-sm btn-secondary" onclick="previewVoice()">🔊 试听</button>
+      <select id="voice-select" style="flex:1;border:1px solid var(--border);border-radius:8px;padding:6px;font-size:13px"></select>
+    </div>
+  </div>
+
+  <!-- 播放控制区 -->
+  <div class="card" id="play-area">
+    <div class="play-area">
+      <div class="current-word-display" id="current-word-display">
+        <span>准备开始</span>
+      </div>
+      <div class="word-counter" id="word-counter">共 0 个词语</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="start-btn" onclick="startDictation()">▶ 开始听写</button>
+      <button class="btn btn-secondary" id="pause-btn" onclick="pauseDictation()" disabled>⏸ 暂停</button>
+      <button class="btn btn-secondary" id="prev-btn" onclick="prevWord()" disabled>⏮ 上一个</button>
+      <button class="btn btn-secondary" id="next-btn" onclick="nextWord()" disabled>⏭ 下一个</button>
+      <button class="btn btn-secondary btn-sm" id="stop-btn" onclick="stopDictation()" disabled>⏹ 停止</button>
+    </div>
+  </div>
+</div>
+
+<!-- 字库页 -->
+<div class="page" id="page-library">
+  <div class="card">
+    <div class="card-title">📚 课本字库</div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">选择年级和单元，一键导入听写</p>
+    <div class="grade-selector">
+      <div class="grade-btn" onclick="libSelectGrade(1)">一年级</div>
+      <div class="grade-btn" onclick="libSelectGrade(2)">二年级</div>
+      <div class="grade-btn active" onclick="libSelectGrade(3)">三年级</div>
+      <div class="grade-btn" onclick="libSelectGrade(4)">四年级</div>
+      <div class="grade-btn" onclick="libSelectGrade(5)">五年级</div>
+      <div class="grade-btn" onclick="libSelectGrade(6)">六年级</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📖 单元词语 <span id="lib-grade-label" class="word-count-badge">三年级</span></div>
+    <div class="unit-selector" id="lib-unit-selector"></div>
+    <div id="lib-word-display" class="word-list" style="margin-top:10px"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="importLibraryWords()">✍️ 导入听写</button>
+      <button class="btn btn-secondary" onclick="copyLibraryWords()">📋 复制词语</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">➕ 自定义词库</div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:10px">添加您自己的词语，永久保存</p>
+    <div style="display:flex;gap:8px">
+      <input id="custom-word-input" type="text" placeholder="输入词语" style="flex:1;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;outline:none">
+      <button class="btn btn-primary btn-sm" onclick="addCustomWord()">添加</button>
+    </div>
+    <div id="custom-words-list" class="word-list" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- 历史记录页 -->
+<div class="page" id="page-history">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:16px;font-weight:bold">📋 听写记录</div>
+    <button class="btn btn-sm btn-secondary" onclick="clearHistory()">🗑️ 清空记录</button>
+  </div>
+  <div id="history-list">
+    <div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <p>暂无记录<br>完成第一次听写后会显示在这里</p>
+    </div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<nav class="tab-bar">
+  <div class="tab-item active" id="tab-home" onclick="switchTab('home')">
+    <span class="tab-icon">🏠</span>首页
+  </div>
+  <div class="tab-item" id="tab-dictation" onclick="switchTab('dictation')">
+    <span class="tab-icon">🎙️</span>听写
+  </div>
+  <div class="tab-item" id="tab-library" onclick="switchTab('library')">
+    <span class="tab-icon">📚</span>字库
+  </div>
+  <div class="tab-item" id="tab-history" onclick="switchTab('history')">
+    <span class="tab-icon">📋</span>记录
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- VIP 开通弹窗 -->
+<div class="modal-overlay" id="vipModal" onclick="closeModalOnBg(event,'vipModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🌟 开通会员</div>
+
+    <div id="vip-already" style="display:none;text-align:center;padding:16px 0">
+      <div style="font-size:48px;margin-bottom:8px">👑</div>
+      <div style="font-size:18px;font-weight:bold;color:var(--secondary);margin-bottom:4px">会员有效中</div>
+      <div id="vip-expire-text" style="font-size:13px;color:var(--text-light)"></div>
+      <button class="btn btn-secondary" style="margin-top:16px;width:100%" onclick="closeModal('vipModal')">继续使用</button>
+    </div>
+
+    <div id="vip-purchase">
+      <div style="font-size:13px;color:var(--text-light);margin-bottom:14px;line-height:1.8">
+        ✅ 无限次听写（免费版每天限3次）<br>
+        ✅ 全套1-6年级课本字库<br>
+        ✅ 错词本无限保存<br>
+        ✅ 去除广告
+      </div>
+
+      <!-- 套餐选择 -->
+      <div class="vip-plan recommended selected" id="plan-year" onclick="selectPlan('year')">
+        <div class="vip-plan-tag">推荐</div>
+        <div class="vip-plan-title">年度会员</div>
+        <div class="vip-plan-price">¥30<span>/年</span></div>
+        <div class="vip-plan-features">每天不到0.1元 · 一杯奶茶换一年无忧</div>
+      </div>
+      <div class="vip-plan" id="plan-month" onclick="selectPlan('month')">
+        <div class="vip-plan-title">月度会员</div>
+        <div class="vip-plan-price">¥9.9<span>/月</span></div>
+        <div class="vip-plan-features">随时开通，随时用</div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;margin-top:6px;font-size:16px;padding:14px" onclick="gotoPay()">
+        立即开通 →
+      </button>
+
+      <div style="text-align:center;margin-top:10px">
+        <span style="font-size:12px;color:var(--text-light)">已有激活码？</span>
+        <button style="background:none;border:none;color:var(--info);font-size:12px;cursor:pointer;text-decoration:underline" onclick="showActivation()">输入激活码</button>
+      </div>
+    </div>
+
+    <!-- 激活码输入区 -->
+    <div id="vip-activation" style="display:none">
+      <div style="font-size:14px;margin-bottom:12px;color:var(--text)">请输入16位激活码（字母+数字）：</div>
+      <input class="activation-input" id="activation-input" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19">
+      <div id="activation-msg" style="font-size:13px;margin-top:8px;min-height:20px;text-align:center"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-secondary" style="flex:1" onclick="hideActivation()">← 返回</button>
+        <button class="btn btn-primary" style="flex:1" onclick="verifyCode()">验证激活</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-light);text-align:center;margin-top:10px">
+        激活码可在付款成功后收到<br>
+        或联系微信客服获取
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" style="width:100%;margin-top:8px" id="vip-close-btn" onclick="closeModal('vipModal')">暂不开通</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="settingsModal" onclick="closeModalOnBg(event,'settingsModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ 设置</div>
+    <div class="settings-section">
+      <div class="settings-section-title">账号</div>
+      <div class="settings-item" onclick="closeModal('settingsModal');openModal('vipModal')">
+        <div class="settings-item-icon">👑</div>
+        <div class="settings-item-text">
+          <div class="settings-item-title">会员状态</div>
+          <div class="settings-item-desc" id="settings-vip-status">加载中...</div>
+        </div>
+        <div class="settings-item-right">›</div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">语音</div>
+      <div class="settings-item" onclick="openModal('voiceModal')">
+        <div class="settings-item-icon">🔊</div>
+        <div class="settings-item-text">
+          <div class="settings-item-title">语音设置</div>
+          <div class="settings-item-desc">语速、音调、音量</div>
+        </div>
+        <div class="settings-item-right">›</div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">数据</div>
+      <div class="settings-item" onclick="exportData()">
+        <div class="settings-item-icon">📤</div>
+        <div class="settings-item-text">
+          <div class="settings-item-title">导出数据</div>
+          <div class="settings-item-desc">导出听写记录为文本</div>
+        </div>
+      </div>
+      <div class="settings-item" onclick="clearAllData()">
+        <div class="settings-item-icon">🗑️</div>
+        <div class="settings-item-text">
+          <div class="settings-item-title">清除所有数据</div>
+          <div class="settings-item-desc">清空记录和自定义词库</div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">关于</div>
+      <div class="settings-item">
+        <div class="settings-item-icon">ℹ️</div>
+        <div class="settings-item-text">
+          <div class="settings-item-title">版本</div>
+          <div class="settings-item-desc">虾米智能听写 v2.0</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('settingsModal')">关闭</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="sampleModal" onclick="closeModalOnBg(event,'sampleModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📖 示例词语</div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:12px">点击任一组词语快速导入</p>
+    <div id="sample-word-groups"></div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="closeModal('sampleModal')">关闭</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="historyDetailModal" onclick="closeModalOnBg(event,'historyDetailModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="history-detail-title">记录详情</div>
+    <div id="history-detail-content"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary" style="flex:1" onclick="reloadHistory()">🔄 重新听写</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('historyDetailModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="helpModal" onclick="closeModalOnBg(event,'helpModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💡 使用说明</div>
+    <div style="font-size:14px;line-height:2;color:var(--text)">
+      <p><b>🎙️ 听写功能</b></p>
+      <p>1. 在"听写"页面输入词语（每行一个）</p>
+      <p>2. 设置朗读次数、间隔时间</p>
+      <p>3. 点击"开始听写"，系统自动朗读</p>
+      <p>4. 孩子在纸上听写，完成后对答案</p>
+      <br>
+      <p><b>📚 字库功能</b></p>
+      <p>选择年级和单元，一键导入课本词语</p>
+      <br>
+      <p><b>📲 离线使用</b></p>
+      <p>点击安装提示，添加到桌面后可完全离线使用</p>
+      <br>
+      <p><b>📋 历史记录</b></p>
+      <p>每次听写自动保存，可查看和重新练习</p>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="closeModal('helpModal')">我知道了</button>
+  </div>
+</div>
+
+<script>
+// ==================== 数据 ====================
+const WORD_LIBRARY = {
+  1: {
+    name: '一年级',
+    units: {
+      '上册第1单元': ['大','小','多','少','上','下','左','右','前','后'],
+      '上册第2单元': ['口','耳','目','手','足','头','身','心','力','气'],
+      '上册第3单元': ['日','月','水','火','山','石','田','土','木','禾'],
+      '下册第1单元': ['春','夏','秋','冬','风','雨','雪','云','花','草'],
+      '下册第2单元': ['红','黄','蓝','绿','白','黑','橙','紫','粉','青'],
+      '下册第3单元': ['家','门','窗','床','桌','椅','书','包','笔','纸'],
+    }
+  },
+  2: {
+    name: '二年级',
+    units: {
+      '上册第1单元': ['快乐','朋友','学校','老师','同学','教室','操场','图书馆','黑板','粉笔'],
+      '上册第2单元': ['秋天','落叶','稻谷','丰收','农民','劳动','金黄','田野','高粱','棉花'],
+      '上册第3单元': ['勇敢','诚实','善良','友爱','帮助','分享','礼貌','尊重','团结','合作'],
+      '下册第1单元': ['春天','燕子','柳树','青蛙','蜜蜂','蝴蝶','花朵','小草','河水','阳光'],
+      '下册第2单元': ['恐龙','化石','博物馆','科学家','发现','研究','古老','生物','地球','亿年'],
+    }
+  },
+  3: {
+    name: '三年级',
+    units: {
+      '上册第1单元': ['早晨','荷花','蜻蜓','碧绿','莲蓬','饱胀','仿佛','展开','舞蹈','随风'],
+      '上册第2单元': ['观察','发现','蚂蚁','蟋蟀','蚯蚓','蝗虫','螳螂','蜈蚣','甲虫','蜘蛛'],
+      '上册第3单元': ['神话','传说','盘古','女娲','精卫','夸父','嫦娥','后羿','大禹','黄帝'],
+      '下册第1单元': ['燕子','赶集','聚拢','增添','掠过','偶尔','荡漾','演奏','歌唱','自由'],
+      '下册第2单元': ['寓言','揠苗','守株','刻舟','掩耳','盲人','龟兔','狐狸','乌鸦','螳螂'],
+      '下册第3单元': ['赵州桥','精美','横跨','创举','雄伟','壮观','坚固','古朴','设计','建造'],
+    }
+  },
+  4: {
+    name: '四年级',
+    units: {
+      '上册第1单元': ['观潮','壮观','宽阔','笼罩','薄雾','若隐若现','人声鼎沸','水天相接','横贯','滚滚'],
+      '上册第2单元': ['桂花','沉浸','姿态','迷人','至今','思念','故乡','摇花','乐趣','香甜'],
+      '上册第3单元': ['爬山虎','引人注意','均匀','重叠','空隙','叶柄','细丝','触角','嫩茎','痕迹'],
+      '下册第1单元': ['乡村','菜园','拱桥','随意','严肃','活泼','朴素','宽敞','勤劳','和谐'],
+      '下册第2单元': ['琥珀','透明','松脂','化石','推测','地质','形成','包裹','挣扎','凝固'],
+    }
+  },
+  5: {
+    name: '五年级',
+    units: {
+      '上册第1单元': ['白鹭','精巧','适宜','晴天','清澄','望哨','铿锵','美丽','嫌','嵌'],
+      '上册第2单元': ['搭石','山洪','暴发','猛涨','家乡','青苔','懒惰','俗语','谴责','平衡'],
+      '上册第3单元': ['民间故事','牛郎织女','仙女','王母娘娘','鹊桥','七夕','思念','团圆','传说','神话'],
+      '下册第1单元': ['草原','一碧千里','无边','骏马','奔驰','回味','迂回','明朗','流入','天际'],
+      '下册第2单元': ['威尼斯','小艇','纵横','操纵','行驶','码头','夜幕','哗笑','庄严','静寂'],
+    }
+  },
+  6: {
+    name: '六年级',
+    units: {
+      '上册第1单元': ['草原','丁香','清新','淡淡','芬芳','珍惜','寒冬','惆怅','愁绪','宽恕'],
+      '上册第2单元': ['狼牙山','壮士','英雄','奋战','牺牲','顽强','坚定','崇高','敌人','胜利'],
+      '上册第3单元': ['宇宙','星系','银河','天体','运行','奥秘','探索','卫星','轨道','质量'],
+      '下册第1单元': ['北京','故宫','天安门','长城','颐和园','天坛','雕塑','建筑','壮观','辉煌'],
+      '下册第2单元': ['鲁滨孙','漂流','荒岛','生存','克服','困难','勇气','智慧','独立','顽强'],
+    }
+  }
+};
+
+const SAMPLE_GROUPS = [
+  { name: '一年级常用', words: ['大','小','多','少','上','下','左','右','前','后','山','水','日','月'] },
+  { name: '二年级春天', words: ['春天','燕子','柳树','青蛙','蜜蜂','蝴蝶','花朵','小草','河水','阳光'] },
+  { name: '三年级词语', words: ['早晨','荷花','蜻蜓','碧绿','莲蓬','饱胀','仿佛','展开','舞蹈','随风'] },
+  { name: '四年级成语', words: ['人声鼎沸','若隐若现','水天相接','横贯','山洪暴发','引人注意'] },
+  { name: '五年级诗词', words: ['一碧千里','无边','骏马','纵横','庄严','静寂','明朗','流入'] },
+  { name: '六年级综合', words: ['壮观','辉煌','顽强','克服','独立','智慧','崇高','坚定','胜利','奥秘'] },
+];
+
+// ==================== 状态 ====================
+let state = {
+  currentPage: 'home',
+  currentMode: 'custom',
+  isPlaying: false,
+  isPaused: false,
+  currentIndex: 0,
+  words: [],
+  repeatCount: 2,
+  wordInterval: 2,
+  wordGap: 5,
+  rate: 0.9,
+  volume: 1,
+  usePrefix: false,
+  selectedGrade: 3,
+  selectedUnit: '',
+  selectedWords: new Set(),
+  voices: [],
+  selectedVoice: null,
+  playTimeout: null,
+  history: [],
+  customWords: [],
+  errorWords: [],
+  currentHistoryRecord: null,
+  libSelectedGrade: 3,
+  libSelectedUnit: '',
+  deferredInstallPrompt: null,
+};
+
+// ==================== 本地存储 ====================
+function saveData() {
+  try {
+    localStorage.setItem('xiami_history', JSON.stringify(state.history));
+    localStorage.setItem('xiami_customWords', JSON.stringify(state.customWords));
+    localStorage.setItem('xiami_errorWords', JSON.stringify(state.errorWords));
+    localStorage.setItem('xiami_settings', JSON.stringify({
+      rate: state.rate, volume: state.volume,
+      repeatCount: state.repeatCount, wordInterval: state.wordInterval, wordGap: state.wordGap,
+      usePrefix: state.usePrefix,
+    }));
+  } catch(e) {}
+}
+
+function loadData() {
+  try {
+    const h = localStorage.getItem('xiami_history');
+    if (h) state.history = JSON.parse(h);
+    const cw = localStorage.getItem('xiami_customWords');
+    if (cw) state.customWords = JSON.parse(cw);
+    const ew = localStorage.getItem('xiami_errorWords');
+    if (ew) state.errorWords = JSON.parse(ew);
+    const s = localStorage.getItem('xiami_settings');
+    if (s) {
+      const settings = JSON.parse(s);
+      state.rate = settings.rate || 0.9;
+      state.volume = settings.volume || 1;
+      state.repeatCount = settings.repeatCount || 2;
+      state.wordInterval = settings.wordInterval || 2;
+      state.wordGap = settings.wordGap || 5;
+      state.usePrefix = settings.usePrefix || false;
+    }
+  } catch(e) {}
+}
+
+// ==================== 语音 ====================
+function loadVoices() {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  const update = () => {
+    state.voices = synth.getVoices();
+    const sel = document.getElementById('voice-select');
+    sel.innerHTML = '';
+    const chVoices = state.voices.filter(v => v.lang.startsWith('zh'));
+    const others = state.voices.filter(v => !v.lang.startsWith('zh'));
+    [...chVoices, ...others].forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.name;
+      opt.textContent = `${v.name} (${v.lang})`;
+      if (v.lang.startsWith('zh')) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    if (chVoices.length > 0) state.selectedVoice = chVoices[0];
+  };
+  synth.onvoiceschanged = update;
+  update();
+}
+
+function speak(text, onEnd) {
+  const synth = window.speechSynthesis;
+  if (!synth) { if (onEnd) onEnd(); return; }
+  synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'zh-CN';
+  utter.rate = state.rate;
+  utter.volume = state.volume;
+  const voiceSel = document.getElementById('voice-select');
+  if (voiceSel && voiceSel.value) {
+    const v = state.voices.find(v => v.name === voiceSel.value);
+    if (v) utter.voice = v;
+  }
+  utter.onend = () => { if (onEnd) onEnd(); };
+  utter.onerror = () => { if (onEnd) onEnd(); };
+  synth.speak(utter);
+}
+
+function previewVoice() {
+  speak('你好，这是语音测试，朗读效果');
+}
+
+// ==================== 听写核心 ====================
+function getWords() {
+  if (state.currentMode === 'custom') {
+    const text = document.getElementById('word-input').value.trim();
+    return text ? text.split('\n').map(w => w.trim()).filter(w => w.length > 0) : [];
+  } else if (state.currentMode === 'library') {
+    if (state.selectedWords.size > 0) return [...state.selectedWords];
+    return [];
+  } else if (state.currentMode === 'error') {
+    return state.errorWords;
+  }
+  return [];
+}
+
+function startDictation() {
+  const words = getWords();
+  if (words.length === 0) { showToast('请先输入词语或选择字库内容'); return; }
+
+  // 检查会员/次数限制
+  if (!canStartDictation()) {
+    openModal('vipModal');
+    showToast('今日免费次数已用完，请开通会员');
+    return;
+  }
+
+  state.words = words;
+
+  // 如果是字库模式，处理数量和打乱
+  if (state.currentMode === 'library') {
+    const count = parseInt(document.getElementById('word-count-input').value) || 0;
+    let arr = [...words];
+    if (document.getElementById('shuffle-toggle').checked) {
+      arr.sort(() => Math.random() - 0.5);
+    }
+    if (count > 0 && count < arr.length) arr = arr.slice(0, count);
+    state.words = arr;
+  }
+
+  state.repeatCount = parseInt(document.getElementById('repeat-count').value) || 2;
+  state.wordInterval = parseFloat(document.getElementById('word-interval').value) || 2;
+  state.wordGap = parseFloat(document.getElementById('word-gap').value) || 5;
+  state.rate = parseFloat(document.getElementById('rate-slider').value) || 0.9;
+  state.volume = parseFloat(document.getElementById('vol-slider').value) || 1;
+  state.usePrefix = document.getElementById('prefix-toggle').checked;
+
+  state.currentIndex = 0;
+  state.isPlaying = true;
+  state.isPaused = false;
+
+  updatePlayUI();
+  playCurrentWord();
+
+  // 保存记录
+  const record = {
+    id: Date.now(),
+    time: new Date().toLocaleString('zh-CN'),
+    words: [...state.words],
+    mode: state.currentMode,
+    grade: state.currentMode === 'library' ? state.selectedGrade : null,
+    settings: {
+      repeatCount: state.repeatCount, wordInterval: state.wordInterval, wordGap: state.wordGap, rate: state.rate
+    }
+  };
+  state.currentHistoryRecord = record;
+  state.history.unshift(record);
+  if (state.history.length > 100) state.history = state.history.slice(0, 100);
+  saveData();
+  renderHistory();
+  // 记录使用次数（仅免费版）
+  if (!checkVipStatus()) incrementTodayCount();
+  updateVipStatus();
+}
+
+function playCurrentWord() {
+  if (!state.isPlaying || state.isPaused) return;
+  if (state.currentIndex >= state.words.length) {
+    finishDictation();
+    return;
+  }
+  const word = state.words[state.currentIndex];
+  updateCurrentWord(word);
+  updateProgress();
+  playWordNTimes(word, state.repeatCount, 0, () => {
+    state.currentIndex++;
+    if (state.currentIndex < state.words.length) {
+      state.playTimeout = setTimeout(playCurrentWord, state.wordGap * 1000);
+    } else {
+      finishDictation();
+    }
+  });
+}
+
+function playWordNTimes(word, total, current, onDone) {
+  if (!state.isPlaying || state.isPaused) return;
+  if (current >= total) { onDone(); return; }
+  const text = state.usePrefix ? `第${state.currentIndex + 1}个，${word}` : word;
+  speak(text, () => {
+    if (current < total - 1) {
+      state.playTimeout = setTimeout(() => playWordNTimes(word, total, current + 1, onDone), state.wordInterval * 1000);
+    } else {
+      onDone();
+    }
+  });
+}
+
+function pauseDictation() {
+  if (!state.isPlaying) return;
+  if (!state.isPaused) {
+    state.isPaused = true;
+    window.speechSynthesis.cancel();
+    if (state.playTimeout) clearTimeout(state.playTimeout);
+    document.getElementById('pause-btn').textContent = '▶ 继续';
+    showToast('已暂停');
+  } else {
+    state.isPaused = false;
+    document.getElementById('pause-btn').textContent = '⏸ 暂停';
+    playCurrentWord();
+  }
+}
+
+function prevWord() {
+  if (state.currentIndex > 0) {
+    window.speechSynthesis.cancel();
+    if (state.playTimeout) clearTimeout(state.playTimeout);
+    state.currentIndex = Math.max(0, state.currentIndex - 1);
+    state.isPaused = false;
+    playCurrentWord();
+  }
+}
+
+function nextWord() {
+  window.speechSynthesis.cancel();
+  if (state.playTimeout) clearTimeout(state.playTimeout);
+  state.currentIndex++;
+  if (state.currentIndex < state.words.length) {
+    state.isPaused = false;
+    playCurrentWord();
+  } else {
+    finishDictation();
+  }
+}
+
+function stopDictation() {
+  state.isPlaying = false;
+  state.isPaused = false;
+  window.speechSynthesis.cancel();
+  if (state.playTimeout) clearTimeout(state.playTimeout);
+  document.getElementById('current-word-display').innerHTML = '<span>已停止</span>';
+  document.getElementById('word-counter').textContent = '';
+  document.getElementById('progress-fill').style.width = '0%';
+  updatePlayUI();
+}
+
+function finishDictation() {
+  state.isPlaying = false;
+  state.isPaused = false;
+  if (state.playTimeout) clearTimeout(state.playTimeout);
+  document.getElementById('current-word-display').innerHTML = '<span>🎉 听写完成！</span>';
+  document.getElementById('progress-fill').style.width = '100%';
+  if (document.getElementById('end-sound-toggle').checked) {
+    setTimeout(() => speak('听写完成，请对答案'), 300);
+  }
+  updatePlayUI();
+  showToast('🎉 听写完成！');
+  updateStats();
+}
+
+function updateCurrentWord(word) {
+  const el = document.getElementById('current-word-display');
+  el.innerHTML = `<span>${word}</span>`;
+  document.getElementById('word-counter').textContent = `第 ${state.currentIndex + 1} / ${state.words.length} 个`;
+}
+
+function updateProgress() {
+  const pct = (state.currentIndex / state.words.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function updatePlayUI() {
+  const startBtn = document.getElementById('start-btn');
+  const pauseBtn = document.getElementById('pause-btn');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const stopBtn = document.getElementById('stop-btn');
+  if (state.isPlaying) {
+    startBtn.textContent = '⏭ 重新开始';
+    pauseBtn.disabled = false;
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
+    stopBtn.disabled = false;
+  } else {
+    startBtn.textContent = '▶ 开始听写';
+    pauseBtn.disabled = true;
+    pauseBtn.textContent = '⏸ 暂停';
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    stopBtn.disabled = true;
+  }
+  document.getElementById('word-counter').textContent = state.words.length > 0 ? `共 ${state.words.length} 个词语` : '';
+}
+
+// ==================== 字库 ====================
+function selectGrade(grade) {
+  state.selectedGrade = grade;
+  state.selectedWords.clear();
+  document.querySelectorAll('#grade-selector .grade-btn').forEach((el, i) => {
+    el.classList.toggle('active', i + 1 === grade);
+  });
+  document.getElementById('grade-label').textContent = WORD_LIBRARY[grade].name;
+  renderUnitSelector();
+}
+
+function renderUnitSelector() {
+  const grade = state.selectedGrade;
+  const units = Object.keys(WORD_LIBRARY[grade].units);
+  state.selectedUnit = units[0];
+  const container = document.getElementById('unit-selector');
+  container.innerHTML = '';
+  units.forEach((unit, idx) => {
+    const btn = document.createElement('div');
+    btn.className = 'unit-btn' + (idx === 0 ? ' active' : '');
+    btn.textContent = unit;
+    btn.onclick = () => {
+      document.querySelectorAll('#unit-selector .unit-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.selectedUnit = unit;
+      renderLibraryWords();
+    };
+    container.appendChild(btn);
+  });
+  renderLibraryWords();
+}
+
+function renderLibraryWords() {
+  const words = WORD_LIBRARY[state.selectedGrade].units[state.selectedUnit] || [];
+  const container = document.getElementById('library-words');
+  container.innerHTML = '';
+  words.forEach(word => {
+    const tag = document.createElement('div');
+    tag.className = 'word-tag' + (state.selectedWords.has(word) ? ' selected' : '');
+    tag.textContent = word;
+    tag.onclick = () => {
+      if (state.selectedWords.has(word)) {
+        state.selectedWords.delete(word);
+        tag.classList.remove('selected');
+      } else {
+        state.selectedWords.add(word);
+        tag.classList.add('selected');
+      }
+    };
+    container.appendChild(tag);
+  });
+}
+
+function selectAllWords() {
+  const words = WORD_LIBRARY[state.selectedGrade].units[state.selectedUnit] || [];
+  words.forEach(w => state.selectedWords.add(w));
+  renderLibraryWords();
+}
+
+function clearSelectedWords() {
+  state.selectedWords.clear();
+  renderLibraryWords();
+}
+
+// 字库页
+function libSelectGrade(grade) {
+  state.libSelectedGrade = grade;
+  document.querySelectorAll('#page-library .grade-btn').forEach((el, i) => {
+    el.classList.toggle('active', i + 1 === grade);
+  });
+  document.getElementById('lib-grade-label').textContent = WORD_LIBRARY[grade].name;
+  renderLibUnitSelector();
+}
+
+function renderLibUnitSelector() {
+  const grade = state.libSelectedGrade;
+  const units = Object.keys(WORD_LIBRARY[grade].units);
+  state.libSelectedUnit = units[0];
+  const container = document.getElementById('lib-unit-selector');
+  container.innerHTML = '';
+  units.forEach((unit, idx) => {
+    const btn = document.createElement('div');
+    btn.className = 'unit-btn' + (idx === 0 ? ' active' : '');
+    btn.textContent = unit;
+    btn.onclick = () => {
+      document.querySelectorAll('#lib-unit-selector .unit-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.libSelectedUnit = unit;
+      renderLibWordDisplay();
+    };
+    container.appendChild(btn);
+  });
+  renderLibWordDisplay();
+}
+
+function renderLibWordDisplay() {
+  const words = WORD_LIBRARY[state.libSelectedGrade].units[state.libSelectedUnit] || [];
+  const container = document.getElementById('lib-word-display');
+  container.innerHTML = '';
+  words.forEach(word => {
+    const tag = document.createElement('div');
+    tag.className = 'word-tag';
+    tag.textContent = word;
+    container.appendChild(tag);
+  });
+}
+
+function importLibraryWords() {
+  const words = WORD_LIBRARY[state.libSelectedGrade].units[state.libSelectedUnit] || [];
+  switchTab('dictation');
+  switchMode('custom');
+  document.getElementById('word-input').value = words.join('\n');
+  showToast('词语已导入听写页面');
+}
+
+function copyLibraryWords() {
+  const words = WORD_LIBRARY[state.libSelectedGrade].units[state.libSelectedUnit] || [];
+  const text = words.join('\n');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板'));
+  } else {
+    const el = document.createElement('textarea');
+    el.value = text; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    showToast('已复制到剪贴板');
+  }
+}
+
+// 自定义词库
+function addCustomWord() {
+  const input = document.getElementById('custom-word-input');
+  const word = input.value.trim();
+  if (!word) return;
+  if (!state.customWords.includes(word)) {
+    state.customWords.push(word);
+    saveData();
+    renderCustomWords();
+    showToast('已添加：' + word);
+  }
+  input.value = '';
+}
+
+function renderCustomWords() {
+  const container = document.getElementById('custom-words-list');
+  if (state.customWords.length === 0) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--text-light)">暂无自定义词语</div>';
+    return;
+  }
+  container.innerHTML = '';
+  state.customWords.forEach(word => {
+    const tag = document.createElement('div');
+    tag.className = 'word-tag';
+    tag.textContent = word + ' ×';
+    tag.style.cursor = 'pointer';
+    tag.onclick = () => {
+      state.customWords = state.customWords.filter(w => w !== word);
+      saveData();
+      renderCustomWords();
+    };
+    container.appendChild(tag);
+  });
+}
+
+// ==================== 历史记录 ====================
+function renderHistory() {
+  const container = document.getElementById('history-list');
+  if (state.history.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>暂无记录<br>完成第一次听写后会显示在这里</p></div>`;
+    return;
+  }
+  container.innerHTML = '';
+  state.history.forEach(record => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    const modeLabel = record.mode === 'library' ? `📚 字库${record.grade ? ' · ' + WORD_LIBRARY[record.grade]?.name : ''}` :
+                      record.mode === 'error' ? '❌ 错题复习' : '✍️ 自定义';
+    item.innerHTML = `
+      <div class="history-title">${record.time}</div>
+      <div class="history-meta">
+        <span>${modeLabel}</span>
+        <span>共 ${record.words.length} 个词语</span>
+        <span>重复 ${record.settings?.repeatCount || 2} 遍</span>
+        <span>间隔 ${record.settings?.wordGap || 5}秒</span>
+      </div>
+      <div class="history-words">
+        ${record.words.slice(0, 10).map(w => `<span class="history-word-tag">${w}</span>`).join('')}
+        ${record.words.length > 10 ? `<span class="history-word-tag">+${record.words.length - 10}个</span>` : ''}
+      </div>
+    `;
+    item.onclick = () => showHistoryDetail(record);
+    container.appendChild(item);
+  });
+}
+
+function showHistoryDetail(record) {
+  state.currentHistoryRecord = record;
+  const modeLabel = record.mode === 'library' ? `字库 · ${record.grade ? WORD_LIBRARY[record.grade]?.name : ''}` :
+                    record.mode === 'error' ? '错题复习' : '自定义';
+  document.getElementById('history-detail-title').textContent = `📋 ${record.time}`;
+  document.getElementById('history-detail-content').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text-light);margin-bottom:8px">${modeLabel} · ${record.words.length}个词语</div>
+      <div class="word-list">${record.words.map(w => `<div class="word-tag">${w}</div>`).join('')}</div>
+    </div>
+    <div style="font-size:13px;color:var(--text-light)">
+      朗读${record.settings?.repeatCount || 2}遍 · 间隔${record.settings?.wordGap || 5}秒 · 语速${record.settings?.rate || 0.9}x
+    </div>
+  `;
+  openModal('historyDetailModal');
+}
+
+function reloadHistory() {
+  if (!state.currentHistoryRecord) return;
+  closeModal('historyDetailModal');
+  switchTab('dictation');
+  switchMode('custom');
+  document.getElementById('word-input').value = state.currentHistoryRecord.words.join('\n');
+  document.getElementById('repeat-count').value = state.currentHistoryRecord.settings?.repeatCount || 2;
+  document.getElementById('word-gap').value = state.currentHistoryRecord.settings?.wordGap || 5;
+  showToast('已加载历史记录');
+}
+
+function clearHistory() {
+  if (!confirm('确定清空所有听写记录吗？')) return;
+  state.history = [];
+  saveData();
+  renderHistory();
+  showToast('记录已清空');
+}
+
+function loadLastRecord() {
+  if (state.history.length === 0) { showToast('暂无历史记录'); return; }
+  const last = state.history[0];
+  document.getElementById('word-input').value = last.words.join('\n');
+  showToast('已加载上次词语');
+}
+
+// ==================== 统计 ====================
+function updateStats() {
+  const total = state.history.length;
+  const words = state.history.reduce((sum, r) => sum + r.words.length, 0);
+  const dates = new Set(state.history.map(r => r.time.split(' ')[0]));
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-words').textContent = words;
+  document.getElementById('stat-days').textContent = dates.size;
+}
+
+// ==================== 示例词语 ====================
+function renderSampleGroups() {
+  const container = document.getElementById('sample-word-groups');
+  container.innerHTML = '';
+  SAMPLE_GROUPS.forEach(group => {
+    const div = document.createElement('div');
+    div.style.marginBottom = '12px';
+    div.innerHTML = `<div style="font-size:13px;font-weight:bold;margin-bottom:6px;color:var(--text)">${group.name}</div>`;
+    const wordDiv = document.createElement('div');
+    wordDiv.className = 'word-list';
+    group.words.forEach(w => {
+      const tag = document.createElement('span');
+      tag.className = 'word-tag';
+      tag.textContent = w;
+      wordDiv.appendChild(tag);
+    });
+    div.appendChild(wordDiv);
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm btn-primary';
+    btn.style.marginTop = '8px';
+    btn.textContent = '✍️ 导入这组词语';
+    btn.onclick = () => {
+      closeModal('sampleModal');
+      switchTab('dictation');
+      document.getElementById('word-input').value = group.words.join('\n');
+      showToast('已导入 ' + group.name);
+    };
+    div.appendChild(btn);
+    container.appendChild(div);
+  });
+}
+
+// ==================== UI 工具 ====================
+function switchTab(tab) {
+  state.currentPage = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+function switchMode(mode) {
+  state.currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach((t, i) => {
+    const modes = ['custom', 'library', 'error'];
+    t.classList.toggle('active', modes[i] === mode);
+  });
+  document.getElementById('custom-input-area').style.display = mode === 'custom' ? 'block' : 'none';
+  document.getElementById('library-select-area').style.display = mode === 'library' ? 'block' : 'none';
+  document.getElementById('error-review-area').style.display = mode === 'error' ? 'block' : 'none';
+  if (mode === 'library') { selectGrade(state.selectedGrade); }
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function closeModalOnBg(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+
+function showToast(msg, duration = 2000) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+function clearInput() {
+  document.getElementById('word-input').value = '';
+  showToast('已清空');
+}
+
+function showHelp() {
+  openModal('helpModal');
+}
+
+function exportData() {
+  let text = '虾米智能听写 - 数据导出\n';
+  text += `导出时间：${new Date().toLocaleString('zh-CN')}\n\n`;
+  text += `=== 听写记录 (${state.history.length}次) ===\n\n`;
+  state.history.forEach((r, i) => {
+    text += `第${i+1}次：${r.time}\n`;
+    text += `词语：${r.words.join('、')}\n\n`;
+  });
+  if (state.customWords.length > 0) {
+    text += `=== 自定义词库 ===\n${state.customWords.join('\n')}\n`;
+  }
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '虾米听写记录.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  closeModal('settingsModal');
+  showToast('数据已导出');
+}
+
+function clearAllData() {
+  if (!confirm('确定清除所有数据吗？此操作不可恢复。')) return;
+  state.history = []; state.customWords = []; state.errorWords = [];
+  saveData();
+  renderHistory();
+  renderCustomWords();
+  updateStats();
+  closeModal('settingsModal');
+  showToast('数据已清除');
+}
+
+// ==================== PWA ====================
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').style.display = 'flex';
+});
+
+function installPWA() {
+  if (!deferredPrompt) {
+    showToast('请在浏览器菜单中选择"添加到主屏幕"');
+    return;
+  }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(result => {
+    if (result.outcome === 'accepted') showToast('安装成功！');
+    deferredPrompt = null;
+    document.getElementById('install-banner').style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').style.display = 'none';
+  showToast('已成功添加到桌面');
+});
+
+// 离线检测
+window.addEventListener('offline', () => document.body.classList.add('offline'));
+window.addEventListener('online', () => { document.body.classList.remove('offline'); showToast('网络已恢复'); });
+if (!navigator.onLine) document.body.classList.add('offline');
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    const swCode = `
+const CACHE_NAME = 'xiami-v2';
+const urlsToCache = ['/'];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => new Response(''))));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
+});`;
+    const blob = new Blob([swCode], { type: 'text/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  });
+}
+
+// PWA Manifest
+const manifest = {
+  name: '虾米智能听写',
+  short_name: '虾米听写',
+  description: '语文智能听写助手，离线可用',
+  start_url: '/',
+  display: 'standalone',
+  background_color: '#fff9f0',
+  theme_color: '#e74c3c',
+  orientation: 'portrait',
+  icons: [{ src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🦐</text></svg>', sizes: '512x512', type: 'image/svg+xml' }]
+};
+const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+const manifestUrl = URL.createObjectURL(manifestBlob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestUrl;
+document.head.appendChild(link);
+
+// ==================== 初始化 ====================
+function init() {
+  loadData();
+  loadVoices();
+  selectGrade(3);
+  libSelectGrade(3);
+  renderLibUnitSelector();
+  renderCustomWords();
+  renderHistory();
+  renderSampleGroups();
+  updateStats();
+  // 更新settings同步
+  const s = document.getElementById('rate-slider');
+  if (s) { s.value = state.rate; document.getElementById('rate-val').textContent = state.rate + 'x'; }
+  const v = document.getElementById('vol-slider');
+  if (v) { v.value = state.volume; document.getElementById('vol-val').textContent = Math.round(state.volume * 100) + '%'; }
+  document.getElementById('repeat-count').value = state.repeatCount;
+  document.getElementById('word-interval').value = state.wordInterval;
+  document.getElementById('word-gap').value = state.wordGap;
+  document.getElementById('prefix-toggle').checked = state.usePrefix;
+  // VIP状态
+  updateVipStatus();
+  // 显示最近记录
+  if (state.history.length > 0) {
+    document.getElementById('recent-history-card').style.display = 'block';
+    const list = document.getElementById('recent-history-list');
+    list.innerHTML = '';
+    state.history.slice(0, 3).forEach(r => {
+      const div = document.createElement('div');
+      div.style.cssText = 'padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer';
+      div.innerHTML = `<div style="font-weight:bold">${r.time}</div><div style="color:var(--text-light)">${r.words.slice(0,5).join('、')}${r.words.length > 5 ? '...' : ''}</div>`;
+      div.onclick = () => { switchTab('history'); };
+      list.appendChild(div);
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ==================== 会员系统 ====================
+
+// 支付链接（请替换为虎皮椒实际收款链接）
+const PAY_LINKS = {
+  year:  'https://pay.xunhupay.com/pay.html?appid=XXXXXXXX&out_trade_no=XIAMI_YEAR_' + Date.now() + '&money=30&name=%E8%99%BE%E7%B1%B3%E5%90%AC%E5%86%99%E5%B9%B4%E5%BA%A6%E4%BC%9A%E5%91%98&notify_url=https://your-domain.com/notify',
+  month: 'https://pay.xunhupay.com/pay.html?appid=XXXXXXXX&out_trade_no=XIAMI_MON_' + Date.now() + '&money=9.9&name=%E8%99%BE%E7%B1%B3%E5%90%AC%E5%86%99%E6%9C%88%E5%BA%A6%E4%BC%9A%E5%91%98&notify_url=https://your-domain.com/notify',
+};
+
+// 激活码验证（前端本地演示版 - 生产环境应改为服务器校验）
+// 格式：code -> { days: 有效天数, type: 'year'|'month'|'trial' }
+// 生产环境中，此处改为 fetch('/api/verify-code', ...) 调用后端接口
+const DEMO_CODES = {
+  // ===== 年度会员 (365天) =====
+  'YEAR-82JU-LLKA-P2ML-PQ8Z': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-SANL-3ETX-M87F-HX7L': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-YXFB-5WGL-L8WG-5NMZ': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-SVW5-SPKG-H6KV-VZSQ': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-EW3P-DGA8-N472-JDJH': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-YDWW-U3HH-YEJZ-38JZ': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-MT28-RX3K-5PG7-4FWR': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-THVT-U9DP-QDWY-NDGU': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-96MT-5RRQ-4AXM-DUWB': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-M888-BUUU-KB83-MRQ5': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-22S3-YFWQ-TSEX-6JBG': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-RFHG-PK7D-XB6N-8F59': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-4YRS-GJAU-MQ88-E4FM': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-FLXH-K5N4-ESMG-2N4U': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-UQPM-X4BJ-USDZ-FSUX': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-U5JN-UPJX-NNAK-GYD4': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-K3X3-BTHY-EPET-7RD9': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-7ZZC-BJCX-23XJ-PBDS': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-JXPX-H7XF-AVL8-DSKT': { days: 365, type: 'year',  label: '年度会员' },
+  'YEAR-U957-35CV-PV6U-C8KA': { days: 365, type: 'year',  label: '年度会员' },
+  // ===== 月度会员 (30天) =====
+  'MON-8KAP-AQ65-V73M-U6G6':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-9TGZ-KH8Z-KCH6-7CAZ':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-P5Q7-64KF-G4XH-8GNN':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-AYHY-KQML-7TH9-B4WB':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-7C9J-LF6C-6NVS-Z2C3':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-3XKV-QLSD-2DL7-7325':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-YW8B-KFQ4-J7FC-44LN':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-NRZP-GBPY-S8NY-LV9M':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-KXZF-MHEL-YQDM-GEZA':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-FVLE-Y63E-3TAQ-9YP2':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-TRKE-PWHC-JJDH-Q7LE':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-4RY6-Q6QB-ZUWG-BEXV':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-78EP-RURZ-846J-4YEY':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-D7KQ-KJAH-75TV-ZVXD':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-A8NH-ZKNJ-3WGM-MLSD':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-TLLM-3Z7C-FZMX-7KMR':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-LPEX-CJQF-BWLN-33GG':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-3F2W-ECZZ-FYWG-GZRB':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-BTE7-XJDZ-XXDL-GQFV':  { days: 30,  type: 'month', label: '月度会员' },
+  'MON-U6EM-YFAJ-XPYK-UFZS':  { days: 30,  type: 'month', label: '月度会员' },
+  // ===== 7天体验 =====
+  'TRY-TUPM-69SX-4MM8-3H62':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-LRZ2-HBF3-SL37-HHHJ':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-A4ND-UC5E-S7YM-X8H6':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-U3DG-RM87-F5A2-3LZ7':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-C2M8-G7E6-RGZH-UJ5J':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-PWLB-SZPQ-U2QC-M2LU':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-5YGC-UVMU-PFJX-DL8R':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-ZRPF-FLAK-AC7E-ZJMU':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-MSYV-5A5L-PAQU-PNR3':  { days: 7,   type: 'trial', label: '7天体验' },
+  'TRY-7R3L-B8XD-QDKH-PRQU':  { days: 7,   type: 'trial', label: '7天体验' },
+};
+
+let selectedPlan = 'year';
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.getElementById('plan-year').classList.toggle('selected', plan === 'year');
+  document.getElementById('plan-month').classList.toggle('selected', plan === 'month');
+}
+
+function gotoPay() {
+  // 在新窗口打开支付页面
+  const link = PAY_LINKS[selectedPlan] || PAY_LINKS.year;
+  // 因为演示阶段链接为占位，提示用户
+  if (link.includes('XXXXXXXX')) {
+    // 演示模式：提示用微信联系购买
+    const msg = selectedPlan === 'year'
+      ? '年度会员 ¥30/年'
+      : '月度会员 ¥9.9/月';
+    alert(`【开通${msg}】\n\n当前为演示版本，正式上线后此处将跳转至支付页面。\n\n您可以：\n1. 联系微信客服获取激活码\n2. 试用激活码（年度）：YEAR-82JU-LLKA-P2ML-PQ8Z\n\n感谢支持！`);
+    showActivation();
+    return;
+  }
+  window.open(link, '_blank');
+  // 提示用户支付后输入激活码
+  setTimeout(() => {
+    showToast('支付成功后，请联系客服获取激活码');
+  }, 1000);
+}
+
+function showActivation() {
+  document.getElementById('vip-purchase').style.display = 'none';
+  document.getElementById('vip-activation').style.display = 'block';
+  document.getElementById('vip-close-btn').style.display = 'none';
+  document.getElementById('activation-input').value = '';
+  document.getElementById('activation-msg').textContent = '';
+  document.getElementById('activation-input').focus();
+  // 格式化输入
+  document.getElementById('activation-input').addEventListener('input', formatActivationInput);
+}
+
+function formatActivationInput(e) {
+  let v = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  let formatted = '';
+  for (let i = 0; i < v.length && i < 16; i++) {
+    if (i > 0 && i % 4 === 0) formatted += '-';
+    formatted += v[i];
+  }
+  e.target.value = formatted;
+}
+
+function hideActivation() {
+  document.getElementById('vip-purchase').style.display = 'block';
+  document.getElementById('vip-activation').style.display = 'none';
+  document.getElementById('vip-close-btn').style.display = 'block';
+}
+
+function verifyCode() {
+  const code = document.getElementById('activation-input').value.trim().toUpperCase();
+  const msgEl = document.getElementById('activation-msg');
+
+  if (code.length < 15) {
+    msgEl.style.color = 'var(--primary)';
+    msgEl.textContent = '请输入完整的16位激活码';
+    return;
+  }
+
+  // 检查是否已使用过此激活码
+  const usedCodes = JSON.parse(localStorage.getItem('xiami_used_codes') || '[]');
+  if (usedCodes.includes(code)) {
+    msgEl.style.color = 'var(--primary)';
+    msgEl.textContent = '❌ 此激活码已被使用';
+    return;
+  }
+
+  // 验证激活码
+  const codeInfo = DEMO_CODES[code];
+  if (!codeInfo) {
+    msgEl.style.color = 'var(--primary)';
+    msgEl.textContent = '❌ 激活码无效，请检查后重试';
+    return;
+  }
+
+  // 激活成功
+  const now = Date.now();
+  const expireTime = now + codeInfo.days * 24 * 60 * 60 * 1000;
+  const currentExpire = parseInt(localStorage.getItem('xiami_vip_expire') || '0');
+  // 如果当前有效期未过，叠加天数
+  const baseTime = currentExpire > now ? currentExpire : now;
+  const newExpire = baseTime + codeInfo.days * 24 * 60 * 60 * 1000;
+
+  localStorage.setItem('xiami_vip_expire', newExpire.toString());
+  usedCodes.push(code);
+  localStorage.setItem('xiami_used_codes', JSON.stringify(usedCodes));
+
+  msgEl.style.color = 'var(--success)';
+  msgEl.textContent = `✅ 激活成功！已开通${codeInfo.label}`;
+
+  setTimeout(() => {
+    closeModal('vipModal');
+    updateVipStatus();
+    showToast(`🎉 ${codeInfo.label}已激活！`);
+  }, 1500);
+}
+
+// 检查会员状态
+function checkVipStatus() {
+  const expire = parseInt(localStorage.getItem('xiami_vip_expire') || '0');
+  return expire > Date.now();
+}
+
+function getVipExpireDate() {
+  const expire = parseInt(localStorage.getItem('xiami_vip_expire') || '0');
+  if (expire <= Date.now()) return null;
+  return new Date(expire).toLocaleDateString('zh-CN');
+}
+
+// 每日使用次数（免费版）
+function getTodayCount() {
+  const today = new Date().toDateString();
+  const stored = JSON.parse(localStorage.getItem('xiami_daily_count') || '{}');
+  return stored[today] || 0;
+}
+
+function incrementTodayCount() {
+  const today = new Date().toDateString();
+  const stored = JSON.parse(localStorage.getItem('xiami_daily_count') || '{}');
+  stored[today] = (stored[today] || 0) + 1;
+  localStorage.setItem('xiami_daily_count', JSON.stringify(stored));
+}
+
+const FREE_DAILY_LIMIT = 3; // 每日免费次数
+
+// 检查是否可以开始听写
+function canStartDictation() {
+  if (checkVipStatus()) return true;
+  return getTodayCount() < FREE_DAILY_LIMIT;
+}
+
+// 更新顶部VIP徽章和首页限制条
+function updateVipStatus() {
+  const badge = document.getElementById('vip-status-badge');
+  const limitBanner = document.getElementById('free-limit-banner');
+  const homeAd = document.getElementById('home-ad');
+
+  if (checkVipStatus()) {
+    badge.innerHTML = '<span class="vip-badge">👑 会员</span>';
+    if (limitBanner) limitBanner.style.display = 'none';
+    if (homeAd) homeAd.style.display = 'none';
+    // 更新VIP弹窗内容
+    const alreadyDiv = document.getElementById('vip-already');
+    const purchaseDiv = document.getElementById('vip-purchase');
+    if (alreadyDiv) {
+      alreadyDiv.style.display = 'block';
+      purchaseDiv.style.display = 'none';
+      document.getElementById('vip-expire-text').textContent = `有效期至：${getVipExpireDate()}`;
+    }
+  } else {
+    const count = getTodayCount();
+    const remain = FREE_DAILY_LIMIT - count;
+    if (remain > 0) {
+      badge.innerHTML = `<span class="free-badge">免费版 ${remain}次</span>`;
+      if (limitBanner) limitBanner.style.display = 'none';
+    } else {
+      badge.innerHTML = '<span class="free-badge" style="color:var(--primary)">今日已用完</span>';
+      if (limitBanner) limitBanner.style.display = 'flex';
+    }
+    if (homeAd) homeAd.style.display = 'block';
+    // 恢复VIP弹窗购买界面
+    const alreadyDiv = document.getElementById('vip-already');
+    const purchaseDiv = document.getElementById('vip-purchase');
+    if (alreadyDiv) {
+      alreadyDiv.style.display = 'none';
+      purchaseDiv.style.display = 'block';
+    }
+  }
+
+  // 更新设置页显示
+  const settingsVip = document.getElementById('settings-vip-status');
+  if (settingsVip) {
+    if (checkVipStatus()) {
+      settingsVip.textContent = `👑 会员有效中 · 到期：${getVipExpireDate()}`;
+    } else {
+      const remain = FREE_DAILY_LIMIT - getTodayCount();
+      settingsVip.textContent = remain > 0 ? `免费版 · 今日剩余 ${remain} 次` : '免费版 · 今日已用完';
+    }
+  }
+}
+
+</script>
+</body>
+</html>
