@@ -722,9 +722,11 @@
         <button class="btn btn-secondary" style="flex:1" onclick="hideActivation()">← 返回</button>
         <button class="btn btn-primary" style="flex:1" onclick="verifyCode()">验证激活</button>
       </div>
-      <div style="font-size:12px;color:var(--text-light);text-align:center;margin-top:10px">
-        激活码可在付款成功后收到<br>
-        或联系微信客服获取
+      <div id="wechat-contact-box" style="font-size:12px;color:var(--text-light);text-align:center;margin-top:12px;padding:12px;background:#fff5f5;border-radius:12px;border:1px solid #fdd">
+        <div style="font-size:13px;color:#c0392b;font-weight:bold;margin-bottom:8px">📱 扫码添加微信，发款获取激活码</div>
+        <img id="wechat-qr-img" style="width:140px;height:140px;border-radius:8px;border:2px solid #eee;display:block;margin:0 auto 8px" alt="微信二维码">
+        <div style="color:#e74c3c;font-size:14px;font-weight:bold;letter-spacing:1px">微信号：canankaman0129</div>
+        <div style="color:#999;font-size:11px;margin-top:4px">付款后发截图，5分钟内回复激活码</div>
       </div>
     </div>
 
@@ -1776,7 +1778,7 @@ function gotoPay() {
     const msg = selectedPlan === 'year'
       ? '年度会员 ¥30/年'
       : '月度会员 ¥9.9/月';
-    alert(`【开通${msg}】\n\n当前为演示版本，正式上线后此处将跳转至支付页面。\n\n您可以：\n1. 联系微信客服获取激活码\n2. 试用激活码（年度）：YEAR-82JU-LLKA-P2ML-PQ8Z\n\n感谢支持！`);
+    alert(`【开通${msg}】\n\n请微信扫码或搜索添加客服：\n微信号：canankaman0129\n\n转账后发送支付截图，5分钟内回复激活码。\n\n也可直接输入激活码：\n试用激活码（7天体验）：TRY-TUPM-69SX-4MM8-3H62\n\n感谢支持！`);
     showActivation();
     return;
   }
@@ -1946,6 +1948,12 @@ function updateVipStatus() {
   }
 }
 
+
+// 微信二维码（base64内嵌）
+(function(){
+  var img = document.getElementById('wechat-qr-img');
+  if (img) img.src =  + data_url + ;
+})();
 </script>
 </body>
 </html>
