@@ -1801,11 +1801,31 @@ function showActivation() {
 }
 
 function formatActivationInput(e) {
+  // 先把所有非字母数字字符去掉，转大写
   let v = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
+  // 判断前缀类型，决定分组方式
+  // YEAR-XXXX-XXXX-XXXX-XXXX → 前缀4位，后面每4位一组，共4+4+4+4+4=20个字符（含横杠19字符）
+  // MON-XXXX-XXXX-XXXX-XXXX  → 前缀3位，后面每4位一组
+  // TRY-XXXX-XXXX-XXXX-XXXX  → 前缀3位，后面每4位一组
   let formatted = '';
-  for (let i = 0; i < v.length && i < 16; i++) {
-    if (i > 0 && i % 4 === 0) formatted += '-';
-    formatted += v[i];
+  if (v.startsWith('YEAR')) {
+    // YEAR + 4组4位
+    let parts = [v.slice(0, 4), v.slice(4, 8), v.slice(8, 12), v.slice(12, 16), v.slice(16, 20)];
+    formatted = parts.filter(p => p.length > 0).join('-');
+  } else if (v.startsWith('MON')) {
+    // MON + 4组4位
+    let parts = [v.slice(0, 3), v.slice(3, 7), v.slice(7, 11), v.slice(11, 15), v.slice(15, 19)];
+    formatted = parts.filter(p => p.length > 0).join('-');
+  } else if (v.startsWith('TRY')) {
+    // TRY + 4组4位
+    let parts = [v.slice(0, 3), v.slice(3, 7), v.slice(7, 11), v.slice(11, 15), v.slice(15, 19)];
+    formatted = parts.filter(p => p.length > 0).join('-');
+  } else {
+    // 未知前缀，按每4位分组（兼容）
+    let parts = [];
+    for (let i = 0; i < v.length; i += 4) parts.push(v.slice(i, i + 4));
+    formatted = parts.join('-');
   }
   e.target.value = formatted;
 }
@@ -1820,9 +1840,10 @@ function verifyCode() {
   const code = document.getElementById('activation-input').value.trim().toUpperCase();
   const msgEl = document.getElementById('activation-msg');
 
-  if (code.length < 15) {
+  // YEAR-XXXX-XXXX-XXXX-XXXX = 24字符，MON/TRY-XXXX-XXXX-XXXX-XXXX = 23字符
+  if (code.length < 19) {
     msgEl.style.color = 'var(--primary)';
-    msgEl.textContent = '请输入完整的16位激活码';
+    msgEl.textContent = '请输入完整的激活码';
     return;
   }
 
